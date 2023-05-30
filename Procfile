@@ -1,1 +1,1 @@
-web: gunicorn sophia.wsgi --log-file -
+web: gunicorn sophia.wsgi --timeout 120 --log-file -
