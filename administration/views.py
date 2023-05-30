@@ -217,8 +217,10 @@ def run_task(request):
             result = videoAns.objects.get(ansId=video_ans_id)
             vf = result.videoAns.path
            # result.trasnscript = transcribe_audio(vf)
-            result.trasnscript = asyncio.run(transcribe_audio(API_KEY, vf))
+            text = asyncio.run(transcribe_audio(API_KEY, vf))
+            result.trasnscript = text
             result.save()
+            print(text)
         for video_ans_id in video_ans_ids:
             answer = videoAns.objects.filter(ansId=video_ans_id)
             for trans in answer:
