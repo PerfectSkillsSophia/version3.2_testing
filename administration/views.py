@@ -11,6 +11,9 @@ from sophia import settings
 from .result import *
 from thefuzz import fuzz
 from statistics import mean
+from .code import transcribe_audio
+import asyncio
+import aiohttp
 
 
 @staff_member_required
@@ -208,41 +211,15 @@ def run_task(request):
         assessment_name = request.POST.get('assessment_name')
         identi = request.POST.get('identi')
         video_ans_ids = request.POST.get('video_ans_ids').split(',')
+        API_KEY = "623cfea0aba24d8f981195bbc20d48e0"
         for video_ans_id in video_ans_ids:
             print(video_ans_id)
             result = videoAns.objects.get(ansId=video_ans_id)
             vf = result.videoAns.path
-            import requests
-            API_KEY = "623cfea0aba24d8f981195bbc20d48e0"
-            filename = vf
-            # Upload Module Begins
-            def read_file(filename, chunk_size=5242880):
-                with open(filename, 'rb') as _file:
-                    while True:
-                        data = _file.read(chunk_size)
-                        if not data:
-                             break
-                        yield data
-            headers = {'authorization': API_KEY}
-            response = requests.post('https://api.assemblyai.com/v2/upload',
-									headers=headers,
-									data=read_file(filename))
-            json_str1 = response.json()
-            
-            endpoint = "https://api.assemblyai.com/v2/transcript"
-            json = {
-				"audio_url": json_str1["upload_url"]
-			}
-            response = requests.post(endpoint, json=json, headers=headers)
-            json_str2 = response.json()
-            endpoint = "https://api.assemblyai.com/v2/transcript/" + json_str2["id"]
-            response = requests.get(endpoint, headers=headers)
-            json_str3 = response.json()
-            while json_str3["status"] != "completed":
-                response = requests.get(endpoint, headers=headers)
-                json_str3 = response.json()
-            result.trasnscript = json_str3["text"]
+           # result.trasnscript = transcribe_audio(vf)
+            result.trasnscript = asyncio.run(transcribe_audio(API_KEY, vf))
             result.save()
+        for video_ans_id in video_ans_ids:
             answer = videoAns.objects.filter(ansId=video_ans_id)
             for trans in answer:
                 s1 = trans.question_id.correctanswer
