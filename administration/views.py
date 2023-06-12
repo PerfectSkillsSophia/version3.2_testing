@@ -14,6 +14,7 @@ from statistics import mean
 from .code import transcribe_audio
 import asyncio
 import aiohttp
+from .faceanalysis import analyze_emotions
 
 
 @staff_member_required
@@ -221,6 +222,16 @@ def run_task(request):
             result.trasnscript = text
             result.save()
             print(text)
+        for video_ans_id in video_ans_ids:
+            print(video_ans_id)
+            result = videoAns.objects.get(ansId=video_ans_id)
+            vf = result.videoAns.path
+            confidence, nervousness = analyze_emotions(vf)
+            if confidence is not None and nervousness is not None:
+                print("Confidence:", confidence, "%")
+                print("Nervousness:", nervousness, "%")
+            else:
+                print("Error occurred during analysis.")
         for video_ans_id in video_ans_ids:
             answer = videoAns.objects.filter(ansId=video_ans_id)
             for trans in answer:
