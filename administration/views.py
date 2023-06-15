@@ -14,7 +14,7 @@ from statistics import mean
 from .code import transcribe_audio
 import asyncio
 import aiohttp
-from .faceanalysis import analyze_emotions
+#from .faceanalysis import analyze_emotions
 
 
 @staff_member_required
